@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Object
 {
-    public abstract class Object
+    public abstract class StaticObject
     {
         protected Texture2D texture;
         public Texture2D Texture
@@ -62,7 +62,7 @@ namespace Object
             get { return spriteEffect;}
             set { spriteEffect = value; }
         }
-        public Object(Texture2D texture)
+        public StaticObject(Texture2D texture)
         {
             this.Texture = texture;
             this.Origin = new Vector2(texture.Width/2, texture.Height/2);
