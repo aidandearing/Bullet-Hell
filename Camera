@@ -66,20 +66,6 @@ namespace Camera
             }
         }
 
-        /*Call this method with negative values to zoom out
-         * or positive values to zoom in. It looks at the current zoom
-         * and adjusts it by the specified amount. If we were at 1.0f
-         * zoom level and specified -0.5f amount it would leave us with
-         * 1.0f - 0.5f = 0.5f so everything would be drawn at half size*/
-        public void AdjustZoom(float amount)
-        {
-            Zoom += amount;
-            if (Zoom < 0.25f)
-            {
-                Zoom = 0.25f;
-            }
-        }
-
         public void Update(GraphicsDevice graphics, Player[] players)
         {
             Vector2 position = new Vector2();
@@ -103,7 +89,7 @@ namespace Camera
 
             Vector2 viewport = new Vector2(graphics.Viewport.Width, graphics.Viewport.Height);
             max /= viewport;
-            zoom = MathHelper.Clamp( max.Length(), ZoomMin, ZoomMax);
+            zoom = MathHelper.Clamp( max.Length() / 2, ZoomMin, ZoomMax);
         }
     }
 }
