@@ -5,7 +5,6 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-
 namespace Camera
 {
     class Camera
@@ -30,23 +29,17 @@ namespace Camera
         #endregion
 
         public static float ZoomMin { get; private set; }
-
         public static float ZoomMax { get; private set; }
-
         //Centered Position of camera in pixels
         public Vector2 Position { get; private set; }
-
         //Current Zoom level with 1.0f being standard
         public float Zoom { get; private set; }
-
         //Current Rotation amount with 0.0f being standard orientation
         public float Rotation { get; private set; }
-
         /*Height and Width of the viewport window which we need to adjust
           anytime the player resizes the game window*/
         public int ViewportWidth { get; set; }
         public int ViewportHeight { get; set; }
-
         //Center of the viewport which does not account
         public Vector2 ViewportCenter
         {
@@ -99,26 +92,19 @@ namespace Camera
             Vector2 dCP3 = position - players[2].Position;
             Vector2 dCP4 = position - players[3].Position;
             Vector2 max = new Vector2();
-
             if (dCP1.Length() > dCP2.Length())
                 max = dCP1;
             else
                 max = dCP2;
-
             if (max.Length() < dCP3.Length())
                 max = dCP3;
             if (max.Length() < dCP4.Length())
                 max = dCP4;
 
             Vector2 viewport = new Vector2(graphics.Viewport.Width, graphics.Viewport.Height);
-
             max /= viewport;
             zoom = MathHelper.Clamp( max.Length(), ZoomMin, ZoomMax);
-          
-            
         }
-            
-     
     }
 }
 
