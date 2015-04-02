@@ -5,9 +5,6 @@ using System.Text;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
 
-
-
-
 namespace PlayerInput
 {
    class PlayerInput
@@ -18,8 +15,6 @@ namespace PlayerInput
        //Constructor
         public PlayerInput(uint Index)
         {
-          
-
             switch(Index)
             {
                 case (uint)Players.player1 :
