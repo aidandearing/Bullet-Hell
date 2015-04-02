@@ -1,0 +1,125 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+
+
+namespace Camera
+{
+    class Camera
+    {
+        #region Singleton
+
+        public static Camera instance { get; set; }
+        private Camera()
+        {
+            ZoomMin = 0.1f;
+            ZoomMax = 1.0f;
+        }
+        public static Camera Instance()
+        {
+            if (instance == null)
+            {
+                instance = new Camera();
+            }
+            return instance;
+        }
+
+        #endregion
+
+        public static float ZoomMin { get; private set; }
+
+        public static float ZoomMax { get; private set; }
+
+        //Centered Position of camera in pixels
+        public Vector2 Position { get; private set; }
+
+        //Current Zoom level with 1.0f being standard
+        public float Zoom { get; private set; }
+
+        //Current Rotation amount with 0.0f being standard orientation
+        public float Rotation { get; private set; }
+
+        /*Height and Width of the viewport window which we need to adjust
+          anytime the player resizes the game window*/
+        public int ViewportWidth { get; set; }
+        public int ViewportHeight { get; set; }
+
+        //Center of the viewport which does not account
+        public Vector2 ViewportCenter
+        {
+            get
+            {
+                return new Vector2(ViewportWidth * 0.5f, ViewportHeight * 0.5f);
+            }
+        }
+
+        /*Create a matrix for the camera to offset everything we draw,
+         the map and our objects. since the camera coordinates are where
+         the camera is, we offset everything by the negative of that to simulate
+         a camera moving.We also cast to integers to avoid filtering artifacts.
+         */
+        public Matrix TranslationMatrix
+        {
+            get
+            {
+                return Matrix.CreateTranslation(-(int)Position.X,
+                    -(int)Position.Y, 0) *
+                    Matrix.CreateRotationZ(Rotation) *
+                    Matrix.CreateScale(new Vector3(Zoom, Zoom, 1)) *
+                    Matrix.CreateTranslation(new Vector3(ViewportCenter, 0));
+            }
+        }
+
+        /*Call this method with negative values to zoom out
+         * or positive values to zoom in. It looks at the current zoom
+         * and adjusts it by the specified amount. If we were at 1.0f
+         * zoom level and specified -0.5f amount it would leave us with
+         * 1.0f - 0.5f = 0.5f so everything would be drawn at half size*/
+        public void AdjustZoom(float amount)
+        {
+            Zoom += amount;
+            if (Zoom < 0.25f)
+            {
+                Zoom = 0.25f;
+            }
+        }
+
+        public void Update(GraphicsDevice graphics, Player[] players)
+        {
+            Vector2 position = new Vector2();
+            float zoom = 1.0f;
+
+            position = (players[0].Position + players[1].Position + players[2].Position + players[3].Position + players[4].Position) / 4;
+
+            Vector2 dCP1 = position - players[0].Position;
+            Vector2 dCP2 = position - players[1].Position;
+            Vector2 dCP3 = position - players[2].Position;
+            Vector2 dCP4 = position - players[3].Position;
+            Vector2 max = new Vector2();
+
+            if (dCP1.Length() > dCP2.Length())
+                max = dCP1;
+            else
+                max = dCP2;
+
+            if (max.Length() < dCP3.Length())
+                max = dCP3;
+            if (max.Length() < dCP4.Length())
+                max = dCP4;
+
+            Vector2 viewport = new Vector2(graphics.Viewport.Width, graphics.Viewport.Height);
+
+            max /= viewport;
+            zoom = MathHelper.Clamp( max.Length(), ZoomMin, ZoomMax);
+          
+            
+        }
+            
+     
+    }
+}
+
+
