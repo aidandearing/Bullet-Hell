@@ -1,27 +1,31 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-
-namespace Object
+namespace ActionGame
 {
-     abstract class DynamicObject : Object
+    abstract class DynamicObject : StaticObject
     {
-        protected Vector2 velocity;
-        public Vector2 Velocity
+        public Vector2 Velocity { get; set; }
+
+        public DynamicObject(Texture2D texture)
+            : base(texture)
         {
-            get { return velocity; }
-            set { velocity = value; }
         }
-         public DynamicObject(Texture2D texture) : base(texture)
+
+        public void Update(GameTime gameTime)
         {
+            // Update code goes here
+            float timelapse = gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+            Position += Velocity * timelapse;
+            Rotation = MathHelper.WrapAngle(Rotation);
+
+            // Update its animation here
+        }
+
+        new public void Draw(SpriteBatch spriteBatch)
+        {
+            base.Draw(spriteBatch);
         }
     }
 }
