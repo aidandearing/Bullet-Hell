@@ -26,7 +26,7 @@ namespace ActionGame
         private float Angle { get; set; }
         private float Speed { get; set; }
 
-        public EffectManager effectManager;
+        public StatusEffectManager effectManager;
 
         /// <summary>
         /// The Constructor for a projectile, this should never be used directly anywhere in code, save inside ProjectileManager
@@ -55,7 +55,7 @@ namespace ActionGame
             this.Opacity = opacity;
             this.OpacityEnd = opacityend;
             this.OpacityCurved = opacitycurved;
-            this.effectManager = new EffectManager(new List<StatusEffect>(),this);
+            this.effectManager = new StatusEffectManager(new List<StatusEffect>(),this);
             if (Parent != null)
                 Begin();
         }
