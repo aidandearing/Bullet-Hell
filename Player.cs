@@ -2,13 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-
 
 namespace ActionGame
 {
@@ -25,16 +22,16 @@ namespace ActionGame
         const float ACTIONCOOLDOWN = 0.2f;
 
         KeyListener input;
+        
         public Player(string key, uint index) : base(key)
         {
             input = new KeyListener(index);
-            
-
         }
 
         new public void ChangeAttr(string attr, float value, Projectile damageSource)
         {
             attr.ToLower();
+            
             switch (attr)
             {
                 case "health":
@@ -42,7 +39,6 @@ namespace ActionGame
                     {
                         Health += value;
                         stat_damage_taken += value;
-                        
                     }
                     else if (canBeHealed && value > 0)
                     {
@@ -65,7 +61,6 @@ namespace ActionGame
         }
         new public void Update(GameTime gameTime)
         {
-
             GamePadState gamePad = input.Update();
 
             if (actionCooldown == 0)
@@ -74,7 +69,6 @@ namespace ActionGame
                 {
                     UseAbility(0);
                     actionCooldown = ACTIONCOOLDOWN;
-
                 }
                 else if (gamePad.IsButtonDown(Buttons.LeftTrigger))
                 {
@@ -110,13 +104,11 @@ namespace ActionGame
             float x = gamePad.ThumbSticks.Left.X;
             float y = gamePad.ThumbSticks.Left.Y;
 
-           
             Velocity = new Vector2(Speed * (float)Math.Acos((double)x), Speed * (float)Math.Asin((double)y));
             if (Velocity.Length() == 0)
                 Rotation = (float)Math.Atan2((double)gamePad.ThumbSticks.Right.Y, (double)gamePad.ThumbSticks.Right.X);
             else
                 Rotation = (float)Math.Atan2((double)-Velocity.Y, (double)Velocity.X);
-
 
             base.Update(gameTime);
         }
