@@ -15,17 +15,20 @@ namespace ActionGame
         public AnimatedObject(Texture2D texture):base(texture)
         {
             this.Animation = "idle";
-        }        
+        }       
+        
         new public void Update(GameTime gameTime)
         {
             base.Update(gameTime);
 
             Animations[Animation].Update(gameTime);
         }
+        
         new public void Draw(SpriteBatch spriteBatch)
         {
             Animations[Animation].Draw(spriteBatch, this);
         }
+        
         public void AddAnimation(Animation animation)
         {
             Animations.Add(animation.Name, animation);
