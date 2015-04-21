@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
-using System;
 
 namespace ActionGame
 {
@@ -107,7 +106,6 @@ namespace ActionGame
                 Animation = "walking";
                 Vector2 delta = PreviousPosition - Position;
                 Animations[Animation].TimeBetweenFrames = (int)(960 / delta.Length());
-                Console.WriteLine(delta.Length());
             }
             else
             {
