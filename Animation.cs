@@ -35,6 +35,7 @@ namespace ActionGame
                 Frame = new Rectangle((int)FramePos.X * Frame.Width, (int)FramePos.Y * Frame.Height, Frame.Width, Frame.Height);
             }
         }
+        
         public void Draw(SpriteBatch spriteBatch, AnimatedObject parent)
         {
             spriteBatch.Draw(Sheet, parent.Position, Frame, parent.Colour, parent.Rotation, parent.TextureOrigin, 
