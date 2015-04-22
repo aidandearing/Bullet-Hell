@@ -36,3 +36,13 @@
   <effect name="changespeed" gamename="Root" description="Rooted in place, unable to move or attack." value="-1" lifetime="5" oncaster="false" onupdate="true" onmove="false" oncast="false" onattack="false" curve="0" ishostile="true" lifetimecurve="0.1"></effect>
   <effect name="changehealth" gamename="Thorny Vines" description="The roots are thorned, dealing constant damage" value="100" lifetime="5" oncaster="false" onupdate="false" onmove="false" oncast="false" onattack="false" curve="50" ishostile="true" lifetimecurve="0.1"></effect>
 </ability>
+
+<!--Frostbolt for Wizard-->
+  <ability>
+    <name>Frostbolt</name>
+    <description>damage and freeze enemies, slowing their movementspeed</description>
+    <cooldown curvevalue="-2.0">2</cooldown><!--Cooldown of 2 seconds? -->
+    <damage>100</damage>                                                          <!-- 3 sec to travel?-->
+    <projectile name="projfrostbolt" range="500" angle="0" isOrientationBased="true" lifetime="3" scalex="1" scaley="1" scaleendx="1" scaleendy="1" scalecurve="true" opacity="1" opacityend="0" opacitycurve="true"></projectile>
+    <effect name="changespeed" gamename="Frozen" description="Frozen in place, unable to move or attack." value="-1" lifetime="5" oncaster="false" onupdate="true" onmove="false" oncast="false" onattack="false" curve="0" ishostile="true" lifetimecurve="0.1"></effect>
+ </ability>
