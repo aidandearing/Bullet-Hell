@@ -2,19 +2,25 @@
 <ability>
   <name>Template Ability</name>
   <description>This is a prototype of everything possible with abilities.</description>
-  <cooldown curvevalue="-0.1">2</cooldown>
-  <projectile name="projrootaoe" range="100" speed="100" angle="0" angleinherited="true" lifetime="1" scalex="1" scaley="1" scaleendx="10" scaleendy="10" opacity="1" opacityend="0" hostile="true" ></projectile>
-  	<emitter lifetime="5" emitradius="0" emitnumber="60" emitangle="6" chase="1" chaseElastic="false"></emitter>
-  		<particle name="spark" lifetime="1" chase="1" rotation="0" rotationend="-1" rotationchase="0" colour="white" colourend="red" scale="1" scaleend="1" opacity="1" opacityend="0"></particle>
-  <projectile name="projrootaoe" range="100" speed="1000" angle="0" angleinherited="true" lifetime="0.1" scalex="1" scaley="1" scaleendx="1" scaleendy="10" opacity="1" opacityend="0" hostile="false" ></projectile>
-  	<emitter lifetime="5" emitradius="0" emitnumber="60" emitangle="6" chase="1" chaseElastic="false"></emitter>
-  		<particle name="spark" lifetime="1" chase="1" rotation="0" rotationend="-1" rotationchase="0" colour="white" colourend="red" scale="1" scaleend="1" opacity="1" opacityend="0"></particle>
+  <cooldown>2</cooldown>
+  <projectile name="projrootaoe" range="100" speed="100" angle="0" angleinherited="true" lifetime="1" scale="1" scaleend="10" opacity="1" opacityend="0" ishostile="true" >
+    <emitter lifetime="5" emitradius="0" emitnumber="60" emitangle="6" chase="1" chaseelastic="false">
+      <particle name="spark" lifetime="1" chase="1" rotation="0" rotationend="-1" rotationchase="0" colour="white" colourend="red" scale="1" scaleend="1" opacity="1" opacityend="0"></particle>
+    </emitter>
+  </projectile>
+  <projectile name="projrootaoe" range="100" speed="1000" angle="0" angleinherited="true" lifetime="0.1" scale="1" scaleend="1" opacity="1" opacityend="0" ishostile="false" >
+    <emitter lifetime="5" emitradius="0" emitnumber="60" emitangle="0" to="6" chase="1" chaseelastic="false">
+      <particle name="spark" lifetime="1" chase="1" rotation="0" rotationend="-1" rotationchase="0" colour="white" colourend="red" scale="1" scaleend="1" opacity="1" opacityend="0"></particle>
+    </emitter>
+  </projectile>
 <!--changespeed && changehealthmax-->
-  <effect name="changespeed" gamename="Boostify" description="Move faster" value="0.5" lifetime="2" ishostile="false"></effect> 
-  	<emitter lifetime="5" emitradius="0" emitnumber="60" emitangle="6" chase="1" chaseElastic="false"></emitter>
-  		<particle name="spark" lifetime="1" chase="1" rotation="0" rotationend="-1" rotationchase="0" colour="white" colourend="red" scale="1" scaleend="1" opacity="1" opacityend="0"></particle>
+  <effect name="changespeed" gamename="Boostify" description="Move faster" value="0.5" lifetime="2" ishostile="false">
+    <emitter lifetime="5" emitradius="0" emitnumber="60" emitangle="0" to="6" chase="1" chaseelastic="false">
+      <particle name="spark" lifetime="1" chase="1" rotation="0" rotationend="-1" rotationchase="0" colour="white" colourend="red" scale="1" scaleend="1" opacity="1" opacityend="0"></particle>
+    </emitter>
+  </effect>
 <!--changehealth && changehealthregen-->
-  <effect name="changehealth" gamename="Hurt" description="Hurts for 10 damage" value="10" lifetime="1" when="move" ishostile="true"></effect>
+  <effect name="changehealth" gamename="Hurt" description="Hurts for 10 damage" value="10" lifetime="1" tick="10" when="move" ishostile="true"></effect>
 <!--noability && nodamage && noattack && noheal-->
   <effect name="noability" gamename="Silence" description="Prevent all but basic attacks" lifetime="5" ishostile="true"></effect>
   <effect name="lifetime" gamename="Doom" description="If you move you will die" lifetime="10" when="move" ishostile="true"></effect>
