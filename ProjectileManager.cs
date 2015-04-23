@@ -1,17 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ActionGame
 {
     class ProjectileManager
     {
         private static ProjectileManager instance { get; set; }
-        private List<Projectile> projectiles;
+        public List<Projectile> projectiles;
         private const int MAXPROJECTILES = 250;
         public static int CurrentProjectiles { get; private set; }
 
@@ -29,11 +26,11 @@ namespace ActionGame
             return instance;
         }
 
-        public void CreateProj(string key, float range, float speed, float angle, bool isOriented, float lifetime, Vector2 scale, Vector2 scaleend, bool scalecurved, float opacity, float opacityend, bool opacitycurved, Entity parent, List<StatusEffect> effects)
+        public void CreateProj(string key, bool hostility, float range, float speed, float angle, bool isOriented, float lifetime, Vector2 scale, Vector2 scaleend, bool scalecurved, float opacity, float opacityend, bool opacitycurved, Entity parent, List<StatusEffect> effects)
         {
             if (projectiles.Count < MAXPROJECTILES)
             {
-                Projectile projectile = new Projectile(key, range, speed, angle, isOriented, lifetime, scale, scaleend, scalecurved, opacity, opacityend, opacitycurved, parent);
+                Projectile projectile = new Projectile(key, hostility, range, speed, angle, isOriented, lifetime, scale, scaleend, scalecurved, opacity, opacityend, opacitycurved, parent);
                 projectile.effectManager.AddEffect(effects);
                 projectiles.Add(projectile);
             }
