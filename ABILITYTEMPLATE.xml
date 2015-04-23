@@ -13,13 +13,13 @@
       <particle name="spark" lifetime="1" chase="1" rotation="0" rotationend="-1" rotationchase="0" colour="white" colourend="red" scale="1" scaleend="1" opacity="1" opacityend="0"></particle>
     </emitter>
   </projectile>
-<!--changespeed && changehealthmax-->
+<!--changespeed && changehealthmax && changehealthregen-->
   <effect name="changespeed" gamename="Boostify" description="Move faster" value="0.5" lifetime="2" ishostile="false">
     <emitter lifetime="5" emitradius="0" emitnumber="60" emitangle="0" to="6" chase="1" chaseelastic="false">
       <particle name="spark" lifetime="1" chase="1" rotation="0" rotationend="-1" rotationchase="0" colour="white" colourend="red" scale="1" scaleend="1" opacity="1" opacityend="0"></particle>
     </emitter>
   </effect>
-<!--changehealth && changehealthregen-->
+<!--changehealth-->
   <effect name="changehealth" gamename="Hurt" description="Hurts for 10 damage" value="10" lifetime="1" tick="10" when="move" ishostile="true"></effect>
 <!--noability && nodamage && noattack && noheal-->
   <effect name="noability" gamename="Silence" description="Prevent all but basic attacks" lifetime="5" ishostile="true"></effect>
