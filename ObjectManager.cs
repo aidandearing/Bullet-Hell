@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Content;
+using System.Collections.Generic;
 
 namespace ActionGame
 {
@@ -74,7 +69,7 @@ namespace ActionGame
 
         public void Update(GameTime gameTime)
         {
-            int index = 0; 
+            int index = 0;
 
             for (int x = 0; x < COLLISIONZONES_WIDTH; x++)
             {
@@ -152,7 +147,7 @@ namespace ActionGame
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            foreach(StaticObject obj in objects)
+            foreach (StaticObject obj in objects)
             {
                 if (obj is AnimatedObject)
                     ((AnimatedObject)obj).Draw(spriteBatch);
