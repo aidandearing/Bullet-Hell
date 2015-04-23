@@ -1,8 +1,5 @@
-using System;
-using System.Xml;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 
 namespace ActionGame
@@ -42,17 +39,23 @@ namespace ActionGame
             }
         }
 
-        public void UseAbility(uint index)
+        public bool UseAbility(uint index)
         {
             if (index < abilities.Count)
-                abilities[(int)index].Use();
+            {
+                return abilities[(int)index].Use();
+            }
+            else
+            {
+                return false;
+            }
         }
 
-        public void LevelAbility(uint index)
-        {
-            if (index < abilities.Count)
-                abilities[(int)index].LevelUp();
-        }
+        //public void LevelAbility(uint index)
+        //{
+        //    if (index < abilities.Count)
+        //        abilities[(int)index].LevelUp();
+        //}
 
         public void Update(GameTime gameTime)
         {
