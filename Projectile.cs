@@ -1,15 +1,17 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
-using System.Collections.Generic;
+using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 
 namespace ActionGame
 {
     class Projectile : DynamicObject
     {
         public static Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
+
+        private List<Entity> exclusionList;
+        public List<ParticleEmitter> emitters;
 
         public Vector2 PositionOrigin { get; set; }
         public Entity Parent { get; set; }
@@ -25,6 +27,7 @@ namespace ActionGame
         private bool isOriented { get; set; }
         private float Angle { get; set; }
         private float Speed { get; set; }
+        public bool isHostile { get; set; }
 
         public StatusEffectManager effectManager;
 
@@ -40,8 +43,9 @@ namespace ActionGame
         /// <param name="parent">The creator of the projectile</param>
         /// <param name="scale">The scale of the projectile at start</param>
         /// <param name="scaleend">The scale of the projectile at end</param>
-        public Projectile(string key, float range, float speed, float angle, bool isOriented, float lifetime, Vector2 scale, Vector2 scaleend, bool scalecurved, float opacity, float opacityend, bool opacitycurved, Entity parent) : base(Textures[key])
+        public Projectile(string key, bool ishostile, float range, float speed, float angle, bool isOriented, float lifetime, Vector2 scale, Vector2 scaleend, bool scalecurved, float opacity, float opacityend, bool opacitycurved, Entity parent) : base(Textures[key])
         {
+            this.isHostile = ishostile;
             this.Range = range;
             this.Lifetime = lifetime;
             this.LifetimeMax = this.Lifetime;
@@ -56,6 +60,10 @@ namespace ActionGame
             this.OpacityEnd = opacityend;
             this.OpacityCurved = opacitycurved;
             this.effectManager = new StatusEffectManager(new List<StatusEffect>(),this);
+            this.Depth = 0.5f;
+            this.isCollidable = true;
+            exclusionList = new List<Entity>();
+            emitters = new List<ParticleEmitter>();
             if (Parent != null)
                 Begin();
         }
@@ -64,9 +72,7 @@ namespace ActionGame
         {
             this.Angle = projectile.Angle;
             this.Colour = projectile.Colour;
-            this.Depth = projectile.Depth;
             this.diesOnImpact = projectile.diesOnImpact;
-            this.effectManager = projectile.effectManager;
             this.ID = projectile.ID;
             this.isOriented = projectile.isOriented;
             this.Lifetime = projectile.Lifetime;
@@ -74,7 +80,7 @@ namespace ActionGame
             this.Opacity = projectile.Opacity;
             this.OpacityEnd = projectile.OpacityEnd;
             this.OpacityCurved = projectile.OpacityCurved;
-            this.Origin = projectile.Origin;
+            this.TextureOrigin = projectile.TextureOrigin;
             this.Parent = projectile.Parent;
             this.Position = projectile.Position;
             this.PositionOrigin = projectile.PositionOrigin;
@@ -88,6 +94,10 @@ namespace ActionGame
             this.Target = projectile.Target;
             this.Texture = projectile.Texture;
             this.Velocity = projectile.Velocity;
+            this.Depth = 0.5f;
+            this.isCollidable = true;
+            exclusionList = new List<Entity>();
+            effectManager = new StatusEffectManager(new List<StatusEffect>(), projectile.Parent);
         }
 
         public void Begin()
@@ -116,6 +126,7 @@ namespace ActionGame
 
             Range -= Velocity.Length() * timelapse;
             Lifetime -= timelapse;
+
             if (ScaleCurved)
             {
                 Scale = new Vector2(MathHelper.SmoothStep(ScaleEnd.X, Scale.X, Lifetime / LifetimeMax), MathHelper.SmoothStep(ScaleEnd.Y, Scale.Y, Lifetime / LifetimeMax));
@@ -157,18 +168,46 @@ namespace ActionGame
                 else
                     return;
             }
+
+            List<StaticObject> collisionList = ObjectManager.Instance().CheckCollisionReady(this);
+            foreach (StaticObject obj in collisionList)
+            {
+                if (obj != this)
+                    Collide(gameTime, obj);
+            }
         }
 
-        public void Collide(DynamicObject target)
+        new public void Collide(GameTime gameTime, StaticObject target)
         {
-            Rectangle targetcollisionbox = new Rectangle((int)target.Position.X, (int)target.Position.Y, (int)(target.Texture.Bounds.Width * target.Scale.X), (int)(target.Texture.Bounds.Height * target.Scale.Y));
-            Rectangle collisionbox = new Rectangle((int)this.Position.X, (int)this.Position.Y, (int)(this.Texture.Bounds.Width * this.Scale.X), (int)(this.Texture.Bounds.Height * this.Scale.Y));
-            if (collisionbox.Intersects(targetcollisionbox))
+            Vector2 delta = Position - target.Position;
+
+            if (delta.Length() <= CollisionRadius + target.CollisionRadius)
             {
-                if (target is Entity)
+                if (target is Entity && !exclusionList.Contains((Entity)target))
                 {
                     Entity entity = (Entity)target;
-                    entity.effectManager.AddEffect(this.effectManager.effects);
+
+                    // Get the hostility between the parent of this projectile and the colliding entity
+                    FactionManager.Hostility hostility = FactionManager.GetHostility(Parent.Faction, entity.Faction);
+
+                    // Check the hostility
+                    switch (hostility)
+                    {
+                        case FactionManager.Hostility.Friendly:
+                            if (!isHostile) // If friendly and this projectile is not hostile add the effects
+                            {
+                                entity.effectManager.AddEffect(this.effectManager.effects);
+                                exclusionList.Add(entity);
+                            }
+                            break;
+                        default:
+                            if (isHostile) // If hostile and this projectile is hostile add the effects
+                            {
+                                entity.effectManager.AddEffect(this.effectManager.effects);
+                                exclusionList.Add(entity);
+                            }
+                            break;
+                    }
                 }
 
                 if (this.diesOnImpact)
