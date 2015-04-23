@@ -1,23 +1,31 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
 
 namespace ActionGame
 {
     class Camera
     {
         public enum Focus { None, Player1, Player2, Player3, Player4 };
-        // The padding around the player, limited only by the min and max zoom amounts
+        /// <summary>
+        /// The padding around the players, gaurantees they stay on screen so long as they do not go beyond the Maximum zoom
+        /// </summary>
         private const int EDGE_PADDING = 4;
-        // The elasticity of the zoom: how quickly zoom changes to meet the new zoom value it should be
-        private const int ZOOM_ELASTICITY = 30;
-        // The elasticity of panning: how quickly the camera pans to its new location
-        private const int PAN_ELASTICITY = 50;
+        /// <summary>
+        /// The elasticity of the zoom, the higher the value the longer it takes to zoom to the new value, exponentially
+        /// Default: 60
+        /// </summary>
+        private int ZOOM_ELASTICITY = 60;
+        /// <summary>
+        /// The elasticity of panning, the higher the value the longer it takes to pan to the desired camera position, exponentially
+        /// Default: 15
+        /// </summary>
+        private int PAN_ELASTICITY = 5;
 
         private static Camera instance { get; set; }
         public static Rectangle Screen { get; set; }
-        public static float ZoomMin { get; private set; }
-        public static float ZoomMax { get; private set; }
+        public static float ZoomMin { get; set; }
+        public static float ZoomMax { get; set; }
         //Centered Position of camera in pixels
         public Vector2 Position { get; private set; }
         //Current Zoom level with 1.0f being standard
@@ -26,8 +34,8 @@ namespace ActionGame
         public float Rotation { get; private set; }
         /*Height and Width of the viewport window which we need to adjust
         anytime the player resizes the game window*/
-        public int ViewportWidth { get; set; }
-        public int ViewportHeight { get; set; }
+        public static int ViewportWidth { get; set; }
+        public static int ViewportHeight { get; set; }
         //Center of the viewport which does not account
         public Vector2 ViewportCenter
         {
@@ -53,20 +61,19 @@ namespace ActionGame
         /*Create a matrix for the camera to offset everything we draw,
         the map and our objects. since the camera coordinates are where
         the camera is, we offset everything by the negative of that to simulate
-        a camera moving.We also cast to integers to avoid filtering artifacts.
+        a camera moving. We also cast to integers to avoid filtering artifacts.
         */
         public Matrix TranslationMatrix
         {
             get
             {
-                return Matrix.CreateTranslation(-(int)Position.X,
-                -(int)Position.Y, 0) *
-                Matrix.CreateRotationZ(Rotation) *
+                return Matrix.CreateTranslation(-(int)Position.X, -(int)Position.Y, 0) *
                 Matrix.CreateScale(new Vector3(Zoom, Zoom, 1)) *
+                /* Matrix.CreateRotationZ(Rotation) * */
                 Matrix.CreateTranslation(new Vector3(ViewportCenter, 0));
             }
         }
-        public void Update(Player[] players, int numofplayers, Focus focus)
+        public void Update(List<Player> players, Focus focus)
         {
             Vector2 position = new Vector2();
             Vector2 dCP1 = new Vector2();
@@ -100,7 +107,7 @@ namespace ActionGame
             }
             else
             {
-                switch (numofplayers)
+                switch (players.Count)
                 {
                     case 1:
                         position = players[0].Position;
@@ -164,11 +171,18 @@ namespace ActionGame
             float zoomtemp = MathHelper.Min(Math.Abs(max.X),Math.Abs(max.Y));
 
             zoom = MathHelper.Clamp(zoomtemp, ZoomMin, ZoomMax);
+            zoom = (float)Math.Round(zoom / 0.125f) * 0.125f;
 
             Position = Position + (position - Position) / PAN_ELASTICITY;
+            Position = new Vector2((float)Math.Round((float)Position.X), (float)Math.Round((float)Position.Y));
+
             Zoom = Zoom + (zoom - Zoom) / ZOOM_ELASTICITY;
+
+            int x = (int)(Position.X - ViewportWidth / Zoom / 2);
+            int y = (int)(Position.Y - ViewportHeight / Zoom / 2);
+            int w = (int)(ViewportWidth / Zoom * 1.5f);
+            int h = (int)(ViewportHeight / Zoom * 1.5f);
+            Camera.Screen = new Rectangle(x,y,w,h);
         }
     }
 }
-
-
