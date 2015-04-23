@@ -2,8 +2,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Xml;
 using System.Collections.Generic;
+using System.Xml;
 
 namespace ActionGame
 {
@@ -18,10 +18,11 @@ namespace ActionGame
         WorldSpace worldSpace;
         ProjectileManager projectileManager;
         ObjectManager objectManager;
+        ParticleManager particleManager;
         public static Random random;
 
         #region Shaders
-        //ShaderBloom shaderBloom;
+        ShaderBloom shaderBloom;
         #endregion
 
         public Game1()
@@ -29,12 +30,15 @@ namespace ActionGame
         {
             graphics = new GraphicsDeviceManager(this);
             //graphics.IsFullScreen = true;
+            graphics.SynchronizeWithVerticalRetrace = true;
 
             Content.RootDirectory = "Content";
 
-            //shaderBloom = new ShaderBloom(this);
+            shaderBloom = new ShaderBloom(this);
+            shaderBloom.Settings = BloomSettings.PresetSettings[0];
+            shaderBloom.ShowBuffer = ShaderBloom.IntermediateBuffer.FinalResult;
 
-            //Components.Add(shaderBloom);
+            Components.Add(shaderBloom);
         }
 
         /// <summary>
@@ -64,11 +68,11 @@ namespace ActionGame
             worldSpace = WorldSpace.Instance();
             projectileManager = ProjectileManager.Instance();
             objectManager = ObjectManager.Instance();
+            particleManager = ParticleManager.Instance();
             camera = Camera.Instance();
             Camera.ViewportWidth = graphics.GraphicsDevice.Viewport.Width;
             Camera.ViewportHeight = graphics.GraphicsDevice.Viewport.Height;
-            Camera.ZoomMin = Camera.ViewportHeight / (float)ObjectManager.COLLISIONBOUNDS;
-            Console.WriteLine(Camera.ZoomMin);
+            Camera.ZoomMin = Camera.ViewportWidth / (float)ObjectManager.COLLISIONBOUNDS;
 
             // Object Dictionaries
             #region Object Dictionaries
@@ -78,6 +82,7 @@ namespace ActionGame
 
             // TODO: use this.Content to load your game content here
             StaticObject.LoadContent(Content);
+            Particle.LoadContent(Content);
             Scene.LoadContent(Content);
             Projectile.LoadContent(Content);
             Ability.LoadContent(Content);
@@ -85,10 +90,9 @@ namespace ActionGame
             Entity.LoadContent(Content);
 
             #region Debug and Tests
-
-            Player player = new Player("wizard", PlayerIndex.One);
+            Player player = new Player("archer", PlayerIndex.One);
             player.TextureOrigin = new Vector2(8, 8);
-            player.Scale = new Vector2(4, 4);
+            player.Scale = new Vector2(8, 8);
 
             Animation animation = new Animation();
             animation.Sheet = player.Texture;
@@ -104,9 +108,8 @@ namespace ActionGame
             animation.FramesAcross = 3;
             player.AddAnimation(animation);
 
-            player.abilityManager.AddNewAbility("Root");
+            player.abilityManager.AddNewAbility("Template Ability");
             player.Position = Vector2.Zero;
-            //player.Velocity = new Vector2(0, -WorldSpace.CHUNKSIZE/16);
             objectManager.AddPlayer(player);
             #endregion
         }
@@ -132,13 +135,10 @@ namespace ActionGame
 
             // TODO: Add your update logic here
             worldSpace.Update(gameTime);
-
-            //players[0].abilityManager.UseAbility(0);
-
             objectManager.Update(gameTime);
-
             camera.Update(objectManager.players, Camera.Focus.None);
             objectManager.Update(gameTime);
+            particleManager.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -153,12 +153,14 @@ namespace ActionGame
             GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
-            spriteBatch.Begin(SpriteSortMode.FrontToBack,BlendState.NonPremultiplied,SamplerState.PointClamp,DepthStencilState.Default,RasterizerState.CullNone,null,Camera.Instance().TranslationMatrix);
+            spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, null, Camera.Instance().TranslationMatrix);
             projectileManager.Draw(spriteBatch);
             objectManager.Draw(spriteBatch);
+            particleManager.Draw(spriteBatch);
             spriteBatch.End();
-
+            
             base.Draw(gameTime);
+           
         }
     }
 }
