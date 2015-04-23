@@ -1,9 +1,7 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
-using System.Xml;
 using System.Collections.Generic;
+using System.Xml;
 using System;
 
 namespace ActionGame
@@ -24,7 +22,6 @@ namespace ActionGame
         public float CooldownBase { get; set; }
         public float CooldownValue { get; set; }
         private float CooldownCurrent { get; set; }
-        public int Damage { get; set; }
         public Entity Parent { get; set; }
         public string ID { get; set; }
 
@@ -45,7 +42,6 @@ namespace ActionGame
             finally
             {
                 Name = doc.SelectSingleNode("/ability/name").InnerText;
-                //Console.WriteLine("Name:\t\t\t\t" + Name);
             }
             #endregion
 
@@ -61,7 +57,6 @@ namespace ActionGame
             finally
             {
                 Description = doc.SelectSingleNode("/ability/description").InnerText;
-                //Console.WriteLine("Description:\t\t\t" + Description);
             }
             #endregion
 
@@ -70,29 +65,7 @@ namespace ActionGame
             float.TryParse(doc.SelectSingleNode("/ability/cooldown").InnerText, out cooldown);
             CooldownBase = cooldown;
             Cooldown = CooldownBase;
-            float cooldownValue = CooldownBase;
-            float.TryParse(doc.SelectSingleNode("/ability/cooldown").Attributes.Item(0).InnerText, out cooldownValue);
-            CooldownValue = cooldownValue;
-            CooldownCurrent = CooldownBase;
-            //Console.WriteLine("Cooldown:\t\t\t" + CooldownBase);
-            //Console.WriteLine("Cooldown Value:\t\t\t" + CooldownValue);
             #endregion 
-
-            #region XmlNode Damage
-            try 
-            {
-                Damage = int.Parse(doc.SelectSingleNode("/ability/damage").InnerText);
-            }
-            catch
-            {
-                Damage = 0;
-            }
-            finally
-            {
-                Damage = int.Parse(doc.SelectSingleNode("/ability/damage").InnerText);
-                //Console.WriteLine("Damage:\t\t\t\t" + Damage);
-            }
-            #endregion
 
             #region XmlNode Projectile
             XmlNodeList nodes_projectile;
@@ -101,9 +74,7 @@ namespace ActionGame
                 nodes_projectile = doc.SelectNodes("/ability/projectile");
             }
             catch
-            {
-                projectiles.Clear();
-            }
+            {}
             finally
             {
                 nodes_projectile = doc.SelectNodes("/ability/projectile");
@@ -123,45 +94,25 @@ namespace ActionGame
                         isOriented = false;
                     float lifetime = 1;
                     float.TryParse(node.Attributes.Item(5).InnerText, out lifetime);
-                    float scalex = 1;
-                    float.TryParse(node.Attributes.Item(6).InnerText, out scalex);
-                    float scaley = 1;
-                    float.TryParse(node.Attributes.Item(7).InnerText, out scaley);
-                    Vector2 scale = new Vector2(scalex, scaley);
-                    float scaleendx = 1;
-                    float.TryParse(node.Attributes.Item(8).InnerText, out scaleendx);
-                    float scaleendy = 1;
-                    float.TryParse(node.Attributes.Item(9).InnerText, out scaleendy);
-                    Vector2 scaleend = new Vector2(scaleendx, scaleendy);
-                    bool scalecurved = false;
-                    if (node.Attributes.Item(10).InnerText.ToLower() == "true")
-                        scalecurved = true;
-                    else
-                        scalecurved = false;
+                    float scale = 1;
+                    Vector2 scaleStart = new Vector2(scale, scale);
+                    float scaleend = 1;
+                    float.TryParse(node.Attributes.Item(6).InnerText, out scaleend);
+                    Vector2 scaleEnd = new Vector2(scaleend, scaleend);
                     float opacity = 1;
-                    float.TryParse(node.Attributes.Item(11).InnerText, out opacity);
+                    float.TryParse(node.Attributes.Item(7).InnerText, out opacity);
                     float opacityend = 1;
-                    float.TryParse(node.Attributes.Item(12).InnerText, out opacityend);
-                    bool opacitycurved = true;
-                    if (node.Attributes.Item(13).InnerText.ToLower() == "true")
-                        opacitycurved = true;
+                    float.TryParse(node.Attributes.Item(8).InnerText, out opacityend);
+                    bool isHostile = true;
+                    if (node.Attributes.Item(10).InnerText.ToLower() == "true")
+                        isHostile = true;
                     else
-                        opacitycurved = false;
+                        isHostile = false;
 
-                    projectiles.Add(new Projectile(name, range, speed, angle, isOriented, lifetime, scale, scaleend, scalecurved, opacity, opacityend, opacitycurved, Parent));
-                    /*Console.WriteLine("Projectile Name:\t\t" + name);
-                    Console.WriteLine("\tRange:\t\t\t" + range);
-                    Console.WriteLine("\tSpeed:\t\t\t" + speed);
-                    Console.WriteLine("\tAngle:\t\t\t" + angle);
-                    Console.WriteLine("\tisOriented:\t\t" + isOriented);
-                    Console.WriteLine("\tLifetime:\t\t" + lifetime);
-                    Console.WriteLine("\tScale:\t\t\t" + scale);
-                    Console.WriteLine("\tScale End:\t\t" + scaleend);
-                    Console.WriteLine("\tScale Curve:\t\t" + scalecurved);
-                    Console.WriteLine("\tOpacity:\t\t" + opacity);
-                    Console.WriteLine("\tOpacity End:\t\t" + opacityend);
-                    Console.WriteLine("\tOpacity Curve:\t\t" + opacitycurved);
-                    Console.WriteLine("\tParent:\t\t\t" + Parent);*/
+                    Projectile projectile = new Projectile(name, isHostile, range, speed, angle, isOriented, lifetime, scaleStart, scaleEnd, false, opacity, opacityend, false, Parent);
+                    XmlNodeList emitternodes = node.ChildNodes;
+                    AddEmitters(projectile, emitternodes);
+                    projectiles.Add(projectile);
                 }
             }
             #endregion
@@ -181,63 +132,80 @@ namespace ActionGame
                 nodes_effect = doc.SelectNodes("/ability/effect");
                 foreach (XmlNode node in nodes_effect)
                 {
-                    string name = node.Attributes.Item(0).InnerText;
+                    StatusEffect.Status name = (StatusEffect.Status)Enum.Parse(typeof(StatusEffect.Status),node.Attributes.Item(0).InnerText.ToLower());
                     string gamename = node.Attributes.Item(1).InnerText;
                     string description = node.Attributes.Item(2).InnerText;
+                    // Not guaranteed to exist after this point
                     float value = 0;
-                    float.TryParse(node.Attributes.Item(3).InnerText, out value);
-                    float lifetime = 1;
-                    float.TryParse(node.Attributes.Item(4).InnerText, out lifetime);
-                    bool oncaster;
-                    if (node.Attributes.Item(5).InnerText.ToLower() == "true")
-                        oncaster = true;
-                    else
-                        oncaster = false;
-                    bool onupdate;
-                    if (node.Attributes.Item(6).InnerText.ToLower() == "true")
-                        onupdate = true;
-                    else
-                        onupdate = false;
-                    bool onmove;
-                    if (node.Attributes.Item(7).InnerText.ToLower() == "true")
-                        onmove = true;
-                    else
-                        onmove = false;
-                    bool oncast;
-                    if (node.Attributes.Item(8).InnerText.ToLower() == "true")
-                        oncast = true;
-                    else
-                        oncast = false;
-                    bool onattack;
-                    if (node.Attributes.Item(9).InnerText.ToLower() == "true")
-                        onattack = true;
-                    else
-                        onattack = false;
-                    float curve = 0;
-                    float.TryParse(node.Attributes.Item(10).InnerText, out curve);
-                    bool ishostile = true;
-                    if (node.Attributes.Item(11).InnerText.ToLower() == "true")
-                        ishostile = true;
-                    else
-                        ishostile = false;
-                    float lifetimecurve = 0;
-                    float.TryParse(node.Attributes.Item(12).InnerText, out lifetimecurve);
+                    float lifetime = 0;
+                    int tick = 0;
+                    StatusEffect.StatusUpdate when = StatusEffect.StatusUpdate.update;
+                    bool ishostile = false;
 
-                    effects.Add(new StatusEffect(name,gamename,description,value,lifetime,oncaster,onupdate,onmove,oncast,onattack,curve,ishostile,lifetimecurve,Parent));
-                    /*Console.WriteLine("Effect Name:\t\t\t" + name);
-                    Console.WriteLine("\tGame Name:\t\t" + gamename);
-                    Console.WriteLine("\tDescription:\t\t" + description);
-                    Console.WriteLine("\tValue:\t\t\t" + value);
-                    Console.WriteLine("\tLifetime:\t\t" + lifetime);
-                    Console.WriteLine("\tLifetime Curve:\t\t" + lifetimecurve);
-                    Console.WriteLine("\tOn Caster:\t\t" + oncaster);
-                    Console.WriteLine("\tOn Update:\t\t" + onupdate);
-                    Console.WriteLine("\tOn Move:\t\t" + onmove);
-                    Console.WriteLine("\tOn Cast:\t\t" + oncast);
-                    Console.WriteLine("\tOn Attack:\t\t" + onattack);
-                    Console.WriteLine("\tCurve:\t\t\t" + curve);
-                    Console.WriteLine("\tIs Hostile:\t\t" + ishostile);
-                    Console.WriteLine("\tParent:\t\t\t" + Parent);*/
+                    switch (name)
+                    {
+                        case StatusEffect.Status.changehealth:
+                            float.TryParse(node.Attributes.Item(3).InnerText, out value);
+                            float.TryParse(node.Attributes.Item(4).InnerText, out lifetime);
+                            int.TryParse(node.Attributes.Item(5).InnerText, out tick);
+                            Enum.TryParse<StatusEffect.StatusUpdate>(node.Attributes.Item(6).InnerText.ToLower(), out when);
+                            bool.TryParse(node.Attributes.Item(7).InnerText, out ishostile);
+                            break;
+                        case StatusEffect.Status.changehealthmax:
+                            float.TryParse(node.Attributes.Item(3).InnerText, out value);
+                            float.TryParse(node.Attributes.Item(4).InnerText, out lifetime);
+                            //Enum.TryParse<StatusEffect.StatusUpdate>(node.Attributes.Item(5).InnerText.ToLower(), out when);
+                            bool.TryParse(node.Attributes.Item(5).InnerText, out ishostile);
+                            break;
+                        case StatusEffect.Status.changehealthregen:
+                            float.TryParse(node.Attributes.Item(3).InnerText, out value);
+                            float.TryParse(node.Attributes.Item(4).InnerText, out lifetime);
+                            //Enum.TryParse<StatusEffect.StatusUpdate>(node.Attributes.Item(5).InnerText.ToLower(), out when);
+                            bool.TryParse(node.Attributes.Item(5).InnerText, out ishostile);
+                            break;
+                        case StatusEffect.Status.changespeed:
+                            float.TryParse(node.Attributes.Item(3).InnerText, out value);
+                            float.TryParse(node.Attributes.Item(4).InnerText, out lifetime);
+                            //Enum.TryParse<StatusEffect.StatusUpdate>(node.Attributes.Item(5).InnerText.ToLower(), out when);
+                            bool.TryParse(node.Attributes.Item(5).InnerText, out ishostile);
+                            break;
+                        case StatusEffect.Status.lifetime:
+                            //float.TryParse(node.Attributes.Item(3).InnerText, out value);
+                            float.TryParse(node.Attributes.Item(3).InnerText, out lifetime);
+                            Enum.TryParse<StatusEffect.StatusUpdate>(node.Attributes.Item(4).InnerText.ToLower(), out when);
+                            bool.TryParse(node.Attributes.Item(5).InnerText, out ishostile);
+                            break;
+                        case StatusEffect.Status.noability:
+                            //float.TryParse(node.Attributes.Item(3).InnerText, out value);
+                            float.TryParse(node.Attributes.Item(3).InnerText, out lifetime);
+                            //Enum.TryParse<StatusEffect.StatusUpdate>(node.Attributes.Item(5).InnerText.ToLower(), out when);
+                            bool.TryParse(node.Attributes.Item(4).InnerText, out ishostile);
+                            break;
+                        case StatusEffect.Status.noattack:
+                            //float.TryParse(node.Attributes.Item(3).InnerText, out value);
+                            float.TryParse(node.Attributes.Item(3).InnerText, out lifetime);
+                            //Enum.TryParse<StatusEffect.StatusUpdate>(node.Attributes.Item(5).InnerText.ToLower(), out when);
+                            bool.TryParse(node.Attributes.Item(4).InnerText, out ishostile);
+                            break;
+                        case StatusEffect.Status.nodamage:
+                            //float.TryParse(node.Attributes.Item(3).InnerText, out value);
+                            float.TryParse(node.Attributes.Item(3).InnerText, out lifetime);
+                            //Enum.TryParse<StatusEffect.StatusUpdate>(node.Attributes.Item(5).InnerText.ToLower(), out when);
+                            bool.TryParse(node.Attributes.Item(4).InnerText, out ishostile);
+                            break;
+                        case StatusEffect.Status.noheal:
+                            //float.TryParse(node.Attributes.Item(3).InnerText, out value);
+                            float.TryParse(node.Attributes.Item(3).InnerText, out lifetime);
+                            //Enum.TryParse<StatusEffect.StatusUpdate>(node.Attributes.Item(5).InnerText.ToLower(), out when);
+                            bool.TryParse(node.Attributes.Item(4).InnerText, out ishostile);
+                            break;
+                        default:
+                            break;
+                    }
+                    StatusEffect effect = new StatusEffect(name, gamename, description, value, lifetime, tick, when, ishostile, Parent); 
+                    XmlNodeList emitternodes = node.ChildNodes;
+                    AddEmitters(effect, emitternodes);
+                    effects.Add(effect);
                 }
             }
             #endregion
@@ -253,45 +221,131 @@ namespace ActionGame
                 CooldownCurrent = 0;
         }
 
-        public void Use()
+        public bool Use()
         {
             if (this.CooldownCurrent == 0)
             {
                 ProjectileManager projectileManager = ProjectileManager.Instance();
 
-                List<StatusEffect> projEffects = new List<StatusEffect>();
+                List<StatusEffect> projEffectsHostile = new List<StatusEffect>();
+                List<StatusEffect> projEffectsNonHostile = new List<StatusEffect>();
+
                 foreach (StatusEffect effect in effects)
                 {
-                    if (effect.Caster)
-                        Parent.effectManager.AddEffect(effect);
+                    if (effect.Parent != this.Parent)
+                        effect.Parent = this.Parent;
+
+                    StatusEffect statusEffect = new StatusEffect(effect);
+
+                    if (statusEffect.Hostile)
+                        projEffectsHostile.Add(statusEffect);
                     else
-                        projEffects.Add(effect);
+                        projEffectsNonHostile.Add(statusEffect);
                 }
 
                 foreach (Projectile projectile in projectiles)
                 {
                     Projectile proj = new Projectile(projectile);
+
                     if (proj.Parent != this.Parent)
                         proj.Parent = this.Parent;
+
+                    proj.Position = this.Parent.Position;
+
                     if (proj.Velocity.Length() > 0)
                         proj.PositionOrigin = proj.Position = this.Parent.Position;
-                    proj.effectManager.AddEffect(projEffects);
+
+                    if (proj.isHostile)
+                        proj.effectManager.AddEffect(projEffectsHostile);
+                    else
+                        proj.effectManager.AddEffect(projEffectsNonHostile);
+
                     projectileManager.CreateProj(proj);
-                    Console.WriteLine(this + " created: " + proj);
                 }
 
                 this.CooldownCurrent = this.Cooldown;
+                return true;
             }
+            return false;
         }
 
-        public void LevelUp()
+        //public void LevelUp()
+        //{
+        //    Level++;
+        //    Cooldown = MathHelper.Clamp(CooldownBase + CooldownValue * Level,0.1f,120);
+        //    foreach (StatusEffect effect in effects)
+        //    {
+        //        effect.Value += effect.Curve;
+        //        effect.Lifetime += effect.LifetimeCurve;
+        //    }
+        //}
+
+        public void AddEmitters(Object obj, XmlNodeList nodes)
         {
-            Level++;
-            Cooldown = MathHelper.Clamp(CooldownBase + CooldownValue * Level,0.1f,120);
-            foreach (StatusEffect effect in effects)
+            foreach (XmlNode node in nodes)
             {
-                effect.Value += effect.Curve;
-                effect.Lifetime += effect.LifetimeCurve;
+                float lifetime = 0.1f;
+                float emitradius = 0;
+                int emitnumber = 1;
+                float emitangle = 0;
+                float emittoangle = MathHelper.TwoPi;
+                float chase = 0;
+                bool chaseelastic = false;
+
+                float.TryParse(node.Attributes.Item(0).InnerText, out lifetime);
+                float.TryParse(node.Attributes.Item(1).InnerText, out emitradius);
+                int.TryParse(node.Attributes.Item(2).InnerText, out emitnumber);
+                float.TryParse(node.Attributes.Item(3).InnerText, out emitangle);
+                float.TryParse(node.Attributes.Item(4).InnerText, out emittoangle);
+                float.TryParse(node.Attributes.Item(5).InnerText, out chase);
+                bool.TryParse(node.Attributes.Item(6).InnerText, out chaseelastic);
+
+                XmlNode node_particle = node.FirstChild;
+                string name = "spark";
+                float particlelifetime = 0.1f;
+                float particlechase = 0;
+                float rotation = 0;
+                float rotationend = 0;
+                float rotationchase = 0;
+                int r = 0;
+                int g = 0;
+                int b = 0;
+                int re = 0;
+                int ge = 0;
+                int be = 0;
+                Color colour = Color.White;
+                Color colourend = Color.White;
+                float scale = 0;
+                float scaleend = 1;
+                float opacity = 1;
+                float opacityend = 0;
+
+                name = node_particle.Attributes.Item(0).InnerText.ToLower();
+                float.TryParse(node_particle.Attributes.Item(1).InnerText, out particlelifetime);
+                float.TryParse(node_particle.Attributes.Item(2).InnerText, out particlechase);
+                float.TryParse(node_particle.Attributes.Item(3).InnerText, out rotation);
+                float.TryParse(node_particle.Attributes.Item(4).InnerText, out rotationend);
+                float.TryParse(node_particle.Attributes.Item(5).InnerText, out rotationchase);
+                int.TryParse(node_particle.Attributes.Item(6).InnerText, out r);
+                int.TryParse(node_particle.Attributes.Item(7).InnerText, out g);
+                int.TryParse(node_particle.Attributes.Item(8).InnerText, out b);
+                colour = new Color(r, g, b);
+                int.TryParse(node_particle.Attributes.Item(9).InnerText, out re);
+                int.TryParse(node_particle.Attributes.Item(10).InnerText, out ge);
+                int.TryParse(node_particle.Attributes.Item(11).InnerText, out be);
+                colourend = new Color(re, ge, be);
+                float.TryParse(node_particle.Attributes.Item(12).InnerText, out scale);
+                float.TryParse(node_particle.Attributes.Item(13).InnerText, out scaleend);
+                float.TryParse(node_particle.Attributes.Item(14).InnerText, out opacity);
+                float.TryParse(node_particle.Attributes.Item(11).InnerText, out opacityend);
+
+                Particle particle = new Particle(name, Parent, particlelifetime, Vector2.Zero, Vector2.Zero, particlechase, rotation, rotationend, rotationchase, colour, colourend, new Vector2(scale, scale), new Vector2(scaleend, scaleend), opacity, opacityend);
+                ParticleEmitter emitter = new ParticleEmitter(Vector2.Zero, particle, lifetime, emitradius, emitnumber, Parent, chase, chaseelastic);
+
+                if (obj is StatusEffect)
+                    ((StatusEffect)obj).emitters.Add(emitter);
+                else if (obj is Projectile)
+                    ((Projectile)obj).emitters.Add(emitter);
             }
         }
 
