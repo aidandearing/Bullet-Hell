@@ -1,27 +1,26 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System.Xml;
+using System;
 using System.Collections.Generic;
 
 namespace ActionGame
 {
     class StatusEffect
     {
-        public string Name { get; set; }
+        public enum Status { changehealth, changehealthmax, changehealthregen, changespeed, noattack, noability, noheal, nodamage, lifetime, reflect };
+        public enum StatusUpdate { update, move, cast, attack, change };
+        public List<ParticleEmitter> emitters;
+
+        public Status Name { get; set; }
         public string NameGame { get; set; }
         public string Description { get; set; }
-        public bool Caster { get; set; }                // Used to dictate whether the effect targets the creater/castor or the parent, if they are one and the same, no biggy
-        public bool onUpdate { get; set; }              // Used by the EffectManager to see whether it should update on parent.Update or on parent.ChangeAttr()
-        public bool onMove { get; set; }                // Will only run in .Update() and while the parent is moving
-        public bool onCast { get; set; }                // Will only run in .Update() and while the parent is casting
-        public bool onAttack { get; set; }              // Will only run in .Update() and while the parent is attacking
+        public StatusUpdate When { get; set; }
         public bool Hostile { get; set; }
-        public float Curve { get; set; }
-        public object Creator { get; set; }
+        public Entity Parent { get; set; }
         public float Value { get; set; }
         public float Lifetime { get; set; }
-        public float LifetimeCurve { get; set; }
+        public int Tick { get; set; }
+        private float tickTimer { get; set; }
+        private int ticksThisSecond { get; set; }
         public bool Over { get; set; }
 
         /// <summary>
@@ -38,106 +37,109 @@ namespace ActionGame
         /// <param name="cast">Does it only run if the target is casting</param>
         /// <param name="attack">Does it only run if the target is attacking</param>
         /// <param name="creator">The creator of the effect</param>
-        public StatusEffect(string name, string gamename, string description, float value, float lifetime, bool caster, bool update, bool move, bool cast, bool attack, float curve, bool ishostile, float lifetimecurve, Entity creator)
+        public StatusEffect(Status name, string gamename, string description, float value, float lifetime, int tick, StatusUpdate when, bool ishostile, Entity parent)
         {
-            this.Name = name.ToLower();
+            this.Name = name;
             this.NameGame = gamename;
             this.Description = description;
             this.Value = value;
             this.Lifetime = lifetime;
-            this.Caster = caster;
-            this.Creator = creator;
+            this.Tick = tick;
+            this.Parent = parent;
             this.Over = false;
-            this.onAttack = attack;
-            this.onCast = cast;
-            this.onMove = move;
-            this.Curve = curve;
+            this.When = when;
             this.Hostile = ishostile;
-            this.LifetimeCurve = lifetimecurve;
+            emitters = new List<ParticleEmitter>();
+        }
 
-            // reflecting damage can only occur on ChangeAttr as only then will the effect have a damageSource
-            if (Name != "reflect" || Name != "nodamage")
-                // onAttack onCast and onMove can only occur within .Update()
-                if (onAttack || onCast || onMove)
-                    this.onUpdate = true;
-                else
-                    this.onUpdate = update;
-            else // Reflect is on and so the effect should update within the Entity.ChangeAttr()
-                this.onUpdate = false;
+        public StatusEffect(StatusEffect effect)
+        {
+            this.Name = effect.Name;
+            this.NameGame = effect.NameGame;
+            this.Description = effect.Description;
+            this.Value = effect.Value;
+            this.Lifetime = effect.Lifetime;
+            this.Tick = effect.Tick;
+            this.Parent = effect.Parent;
+            this.Over = false;
+            this.When = effect.When;
+            this.Hostile = effect.Hostile;
+            emitters = new List<ParticleEmitter>();
         }
 
         // Normal Update Method
         public void Update(GameTime gameTime, Entity parent)
         {
             // Decrement iterations every time the effect updates
-            Lifetime -= gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-            // If it is less than zero flag the effect for removal
+            float timeLapse = gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+
+            Lifetime -= timeLapse;
+
+            if (Tick > 0)
+            {
+                tickTimer += timeLapse;
+                float emitTimerGoal = 1 / Tick;
+
+                if (tickTimer > emitTimerGoal && ticksThisSecond < Tick)
+                {
+                    this.Use(Parent, gameTime);
+                    ticksThisSecond++;
+                    tickTimer = 0;
+                }
+            }
+            else
+                this.Use(Parent, gameTime);
+
             if (Lifetime < 0)
             {
-                if (Caster)
-                    this.Last((Entity)Creator);
-                else
-                    this.Last(parent);
-
+                this.Last(Parent);
                 Over = true;
-            }
-            else // Otherwise run all the update logic
-            {
-                // Check to see who the effect is targeting
-                // But why? Should not it just be created inside the targets EffectManager, and therefore assume its target is its parent?
-                if (Caster)
-                {
-                    this.Use((Entity)Creator);
-                }
-                else // It must be targeting the parent of the effect, and not the creator
-                {
-                    this.Use(parent);
-                }
             }
         }
 
         // Used for the reflect projectile effect
-        public void Update(GameTime gameTime, Entity parent, Projectile damageSource)
-        {
-            Lifetime -= gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-            // If it is less than zero flag the effect for removal
-            if (Lifetime < 0)
-            {
-                if (Caster)
-                    this.Last((Entity)Creator);
-                else
-                    this.Last(parent);
+        //public void Update(GameTime gameTime, Entity parent, Projectile damageSource)
+        //{
+        //    Lifetime -= gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+        //    // If it is less than zero flag the effect for removal
+        //    if (Lifetime < 0)
+        //    {
+        //        if (Caster)
+        //            this.Last((Entity)Creator);
+        //        else
+        //            this.Last(parent);
 
-                Over = true;
-            }
-            else // Otherwise run all the update logic
-                this.Use(parent, damageSource);
-        }
+        //        Over = true;
+        //    }
+        //    else // Otherwise run all the update logic
+        //        this.Use(parent, damageSource);
+        //}
 
-        public void Use(Entity target)
+        public void Use(Entity target, GameTime gameTime)
         {
-            if (this.Name == "changehealth")
-                target.ChangeAttr("health", this.Value);
-            if (this.Name == "changehealthmax")
-                target.ChangeAttr("healthmax", this.Value);
-            if (this.Name == "changehealthregen")
-                target.ChangeAttr("healthregen", this.Value);
-            if (this.Name == "changedamage")
-                target.ChangeAttr("damage", this.Value);
-            if (this.Name == "changelevel")
-                target.ChangeAttr("level", this.Value);
-            else if (this.Name == "changespeed")
+            float timeLapse = gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
+
+            if (this.Name == Status.changehealth)
+                target.ChangeAttr(Entity.Attribute.health, this.Value);
+            else if (this.Name == Status.changehealthmax)
+                target.ChangeAttr(Entity.Attribute.healthmax, this.Value);
+            else if (this.Name == Status.changehealthregen)
+                target.ChangeAttr(Entity.Attribute.healthregen, this.Value);
+            else if (this.Name == Status.changespeed)
             {
                 // Change the position of the target by a multiplier on its velocity
                 // Effects are updated after the parent is, and therefore can do things like this:
-                target.Position += target.Velocity * Value;
+                Console.WriteLine(this);
+                target.Position += target.Velocity * Value * timeLapse;
             }
-            else if (this.Name == "noability" && target.canCast)
+            else if (this.Name == Status.noability && target.canCast)
                 target.canCast = false;
-            else if (this.Name == "noattack" && target.canAttack)
+            else if (this.Name == Status.noattack && target.canAttack)
                 target.canAttack = false;
-            else if (this.Name == "nodamage" && target.canBeDamaged)
+            else if (this.Name == Status.nodamage && target.canBeDamaged)
                 target.canBeDamaged = false;
+            else if (this.Name == Status.noheal && target.canBeHealed)
+                target.canBeHealed = false;
         }
 
         // If the effect is set to reflect incoming damage
@@ -146,8 +148,8 @@ namespace ActionGame
             ProjectileManager projectileManager = ProjectileManager.Instance();
 
             // Might not work, vector2 is touchy with stuff like this
-            Projectile projectile = damageSource;
-            projectile.Velocity = damageSource.Velocity * -1;
+            Projectile projectile = new Projectile(damageSource);
+            projectile.Velocity *= -1;
             projectile.Parent = target;
 
             // Add the projectile
@@ -159,14 +161,19 @@ namespace ActionGame
 
         public void Last(Entity target)
         {
-            if (this.Name == "noability" && !target.canCast)
+            if (this.Name == Status.changehealthmax)
+                target.ChangeAttr(Entity.Attribute.healthmax, Value);
+            else if (this.Name == Status.changehealthregen)
+                target.ChangeAttr(Entity.Attribute.healthregen, Value);
+            else if (this.Name == Status.noability && !target.canCast)
                 target.canCast = true;
-            else if (this.Name == "noattack" && !target.canAttack)
+            else if (this.Name == Status.noattack && !target.canAttack)
                 target.canAttack = true;
-            else if (this.Name == "nodamage" && !target.canBeDamaged)
+            else if (this.Name == Status.nodamage && !target.canBeDamaged)
                 target.canBeDamaged = true;
-
-            if (this.Name == "lifetime")
+            else if (this.Name == Status.noheal && !target.canBeHealed)
+                target.canBeHealed = true;
+            else if (this.Name == Status.lifetime)
                 target.isAlive = false;
         }
     }
