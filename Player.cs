@@ -14,7 +14,7 @@ namespace ActionGame
         public int stat_skills_used { get; set; }
         public int stat_enemies_killed { get; set; }
         float actionCooldown = 0;
-        const float ACTIONCOOLDOWN = 0.2f;
+        const float ACTIONCOOLDOWN = 0.5f;
 
         KeyListener input;
         PlayerIndex player;
@@ -26,13 +26,11 @@ namespace ActionGame
             isCollidable = true;
         }
 
-        new public void ChangeAttr(string attr, float value)
+        new public void ChangeAttr(Entity.Attribute attr, float value)
         {
-            attr.ToLower();
-
             switch (attr)
             {
-                case "health":
+                case Entity.Attribute.health:
                     if (canBeDamaged && value < 0)
                     {
                         Health += value;
@@ -44,13 +42,13 @@ namespace ActionGame
                         stat_health_healed += value;
                     }
                     break;
-                case "healthmax":
+                case Entity.Attribute.healthmax:
                     HealthMax += value;
                     break;
-                case "healthregen":
+                case Entity.Attribute.healthregen:
                     HealthRegen += value;
                     break;
-                case "experience":
+                case Entity.Attribute.experience:
                     Experience += (int)value;
                     break;
                 default:
@@ -78,32 +76,42 @@ namespace ActionGame
                     else if (gamePad.Triggers.Left > 0.5f)
                     {
                         if (UseAbility(1))
+                        {
                             stat_skills_used++;
-                        actionCooldown = ACTIONCOOLDOWN;
+                            actionCooldown = ACTIONCOOLDOWN;
+                        }
                     }
                     else if (gamePad.Buttons.A == ButtonState.Pressed)
                     {
                         if (UseAbility(2))
+                        {
                             stat_skills_used++;
-                        actionCooldown = ACTIONCOOLDOWN;
+                            actionCooldown = ACTIONCOOLDOWN;
+                        }
                     }
                     else if (gamePad.Buttons.X == ButtonState.Pressed)
                     {
                         if (UseAbility(3))
+                        {
                             stat_skills_used++;
-                        actionCooldown = ACTIONCOOLDOWN;
+                            actionCooldown = ACTIONCOOLDOWN;
+                        }
                     }
                     else if (gamePad.Buttons.Y == ButtonState.Pressed)
                     {
                         if (UseAbility(4))
+                        {
                             stat_skills_used++;
-                        actionCooldown = ACTIONCOOLDOWN;
+                            actionCooldown = ACTIONCOOLDOWN;
+                        }
                     }
                     else if (gamePad.Buttons.B == ButtonState.Pressed)
                     {
                         if (UseAbility(5))
+                        {
                             stat_skills_used++;
-                        actionCooldown = ACTIONCOOLDOWN;
+                            actionCooldown = ACTIONCOOLDOWN;
+                        }
                     }
                 }
 
@@ -135,8 +143,56 @@ namespace ActionGame
                 if (PreviousPosition != Position)
                     Rotation = (float)Math.Atan2((double)Velocity.Y, (double)Velocity.X);
 
-                if (Keyboard.GetState().IsKeyDown(Keys.Q))
-                    UseAbility(0);
+                if (actionCooldown <= 0)
+                {
+                    if (Keyboard.GetState().IsKeyDown(Keys.Space))
+                    {
+                        if (UseAbility(0))
+                        {
+                            actionCooldown = ACTIONCOOLDOWN;
+                        }
+                    }
+                    if (Keyboard.GetState().IsKeyDown(Keys.LeftShift))
+                    {
+                        if (UseAbility(1))
+                        {
+                            stat_skills_used++;
+                            actionCooldown = ACTIONCOOLDOWN;
+                        }
+                    }
+                    if (Keyboard.GetState().IsKeyDown(Keys.Q))
+                    {
+                        if(UseAbility(2))
+                        {
+                            stat_skills_used++;
+                            actionCooldown = ACTIONCOOLDOWN;
+                        }
+                    }
+                    if (Keyboard.GetState().IsKeyDown(Keys.W))
+                    {
+                        if (UseAbility(3))
+                        {
+                            stat_skills_used++;
+                            actionCooldown = ACTIONCOOLDOWN;
+                        }
+                    }
+                    if (Keyboard.GetState().IsKeyDown(Keys.E))
+                    {
+                        if (UseAbility(4))
+                        {
+                            stat_skills_used++;
+                            actionCooldown = ACTIONCOOLDOWN;
+                        }
+                    }
+                    if (Keyboard.GetState().IsKeyDown(Keys.R))
+                    {
+                        if (UseAbility(5))
+                        {
+                            stat_skills_used++;
+                            actionCooldown = ACTIONCOOLDOWN;
+                        }
+                    }
+                }
             }
 
             base.Update(gameTime);
