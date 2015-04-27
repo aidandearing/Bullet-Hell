@@ -54,7 +54,7 @@ namespace ActionGame
                 else
                 {
                     CollisionRectangle = new Rectangle((int)Position.X, (int)Position.Y, CollisionRectangle.Width, CollisionRectangle.Height);
-                    obj.CollisionRectangle = new Rectangle((int)obj.Position.X, (int)obj.Position.Y, obj.CollisionRectangle.Width, obj.CollisionRectangle.Height);
+                    obj.CollisionRectangle = new Rectangle((int)obj.Position.X - obj.CollisionRectangle.Width / 2, (int)obj.Position.Y - obj.CollisionRectangle.Width / 2, obj.CollisionRectangle.Width, obj.CollisionRectangle.Height);
 
                     if (CollisionRectangle.Intersects(obj.CollisionRectangle))
                     {
