@@ -35,6 +35,11 @@ namespace ActionGame
             Scene.Textures.Add("textures_noisy1", Content.Load<Texture2D>("Textures/noisy1"));
             Scene.Textures.Add("textures_noisy2", Content.Load<Texture2D>("Textures/noisy2"));
             Scene.Textures.Add("textures_noisy3", Content.Load<Texture2D>("Textures/noisy3"));
+            Scene.Textures.Add("textures_ground_dungeon_tile1", Content.Load<Texture2D>("Textures/tile_1"));
+            Scene.Textures.Add("textures_ground_dungeon_tile2", Content.Load<Texture2D>("Textures/tile_2"));
+            Scene.Textures.Add("textures_ground_dungeon_tile3", Content.Load<Texture2D>("Textures/tile_3"));
+            Scene.Textures.Add("textures_ground_dungeon_tile4", Content.Load<Texture2D>("Textures/tile_4"));
+            Scene.Textures.Add("textures_ground_dungeon_tile5", Content.Load<Texture2D>("Textures/tile_5"));
 
             // Greenery
             // Conifers
@@ -73,6 +78,12 @@ namespace ActionGame
             Scene.Textures.Add("details_rocks", Content.Load<Texture2D>("Scenes/Details/rocks"));
             // Runes
             //Scene.Textures.Add("conifers", Content.Load<Texture2D>("Scenes/Details/runes"));
+
+            // Walls
+            // Dungeon Grey
+            Scene.Textures.Add("DungeonWallGreyCorner", Content.Load<Texture2D>("Scenes/Walls/DungeonWall_Corner"));
+            Scene.Textures.Add("DungeonWallGreyStraight", Content.Load<Texture2D>("Scenes/Walls/DungeonWall_Straight"));
+            Scene.Textures.Add("DungeonWallGrey", Content.Load<Texture2D>("Scenes/Walls/DungeonWall"));
         }
 
         /// <summary>
