@@ -17,7 +17,7 @@ namespace ActionGame
         public int Level { get; protected set; }
         public int Experience { get; protected set; }
         public int ExperienceMax { get; protected set; }
-        public float Speed { get; protected set; }
+        public float Speed { get; set; }
         public bool canBeHealed { get; set; }
         public bool canBeDamaged { get; set; }
         public bool isMoving { get; protected set; }
@@ -43,8 +43,9 @@ namespace ActionGame
             this.canBeHealed = true;
             this.canCast = true;
             this.canMove = true;
+            this.isAlive = true;
             //The size in pixels per tile.
-            Speed = WorldSpace.MetresToPixels(1);
+            Speed = WorldSpace.MetresToPixels(2);
         }
 
         public void ChangeAttr(Attribute attr, float value)
@@ -78,7 +79,12 @@ namespace ActionGame
             isChangingAttr = false;
 
             float timeLapse = gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-            ChangeAttr(Attribute.health, HealthRegen * timeLapse);
+
+            if (this is Player)
+                ((Player)this).ChangeAttr(Attribute.health, HealthRegen * timeLapse);
+            else
+                ChangeAttr(Attribute.health, HealthRegen * timeLapse);
+            
 
             PreviousPosition = Position;
             isAttacking = false;
@@ -96,24 +102,29 @@ namespace ActionGame
             else
                 isMoving = false;
 
-            if (isMoving)
+            if (isAlive)
             {
-                Animation = "walking";
-                Vector2 delta = PreviousPosition - Position;
-                // 960 / 60 = 16 | 256 / 16 = 16, the sprite is 16x16, therefore 960 is the perfect value to divide the delta length by
-                Animations[Animation].TimeBetweenFrames = (int)(960 / delta.Length());
+                if (isMoving)
+                {
+                    Animation = "walking";
+                    Vector2 delta = PreviousPosition - Position;
+                    // 960 / 60 = 16 | 256 / 16 = 16, the sprite is 16x16, therefore 960 is the perfect value to divide the delta length by
+                    Animations[Animation].TimeBetweenFrames = (int)(960 / delta.Length());
+                }
+                else
+                {
+                    Animation = "idle";
+                }
+
+                List<StaticObject> collisionList = ObjectManager.Instance().CheckCollisionReady(this);
+                foreach (StaticObject obj in collisionList)
+                {
+                    if (obj != this)
+                        Collide(gameTime, obj);
+                }
             }
             else
-            {
-                Animation = "idle";
-            }
-
-            List<StaticObject> collisionList = ObjectManager.Instance().CheckCollisionReady(this);
-            foreach (StaticObject obj in collisionList)
-            {
-                if (obj != this)
-                    Collide(gameTime, obj);
-            }
+                Animation = "dead";
 
             WorldSpace.Instance().CheckPositionWithinBounds(this);
         }
@@ -151,7 +162,7 @@ namespace ActionGame
                 else
                 {
                     CollisionRectangle = new Rectangle((int)Position.X, (int)Position.Y, CollisionRectangle.Width, CollisionRectangle.Height);
-                    obj.CollisionRectangle = new Rectangle((int)obj.Position.X, (int)obj.Position.Y, obj.CollisionRectangle.Width, obj.CollisionRectangle.Height);
+                    obj.CollisionRectangle = new Rectangle((int)obj.Position.X - obj.CollisionRectangle.Width / 2, (int)obj.Position.Y - obj.CollisionRectangle.Height / 2, obj.CollisionRectangle.Width, obj.CollisionRectangle.Height);
 
                     if (CollisionRectangle.Intersects(obj.CollisionRectangle))
                     {
