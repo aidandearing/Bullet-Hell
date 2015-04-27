@@ -92,9 +92,11 @@ namespace ActionGame
             if (emitTimer > emitTimerGoal && emittedThisSecond < EmitNumber)
             {
                 Particle particle = new Particle(Particle);
-                float num = (float)Game1.random.NextDouble() * EmitRadius;
+                float num = (float)Game1.random.NextDouble() * WorldSpace.MetresToPixels(EmitRadius);
                 float angle = (float)Game1.random.NextDouble() * MathHelper.TwoPi;
+                particle.Parent = this.Parent;
                 particle.Position = this.Position + new Vector2(num * (float)Math.Cos((double)angle), num * (float)Math.Sin((double)angle));
+                particle.Position = particle.Position - particle.TextureOrigin;
                 ParticleManager.Instance().AddParticle(particle);
                 emittedThisSecond++;
                 emitTimer = 0;
