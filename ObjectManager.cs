@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 
 namespace ActionGame
@@ -128,18 +129,8 @@ namespace ActionGame
 
             ProjectileManager.Instance().Update(gameTime);
 
-            for (int i = 0; i < deadObjects.Count; i++)
-            {
-                for (int j = 0; j < objects.Count; j++)
-                {
-                    if (objects[j].ID == deadObjects[i].ID)
-                    {
-                        objects.RemoveAt(j);
-                        j--;
-                    }
-                }
-            }
-
+            foreach (StaticObject obj in deadObjects)
+                objects.Remove(obj);
 
             collisionLists = new List<List<StaticObject>>();
             deadObjects = new List<StaticObject>();
