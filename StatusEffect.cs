@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using System;
 using System.Collections.Generic;
 
@@ -8,7 +9,11 @@ namespace ActionGame
     {
         public enum Status { changehealth, changehealthmax, changehealthregen, changespeed, noattack, noability, noheal, nodamage, lifetime, reflect };
         public enum StatusUpdate { update, move, cast, attack, change };
-        public List<ParticleEmitter> emitters;
+
+        public List<ParticleEmitter> Emitters;
+        public List<LightSource> Lights;
+        public List<Sound> Sounds;
+        public List<SoundEffect> SoundEffects;
 
         public Status Name { get; set; }
         public string NameGame { get; set; }
@@ -18,10 +23,12 @@ namespace ActionGame
         public Entity Parent { get; set; }
         public float Value { get; set; }
         public float Lifetime { get; set; }
+        public float LifetimeMax { get; set; }
         public int Tick { get; set; }
         private float tickTimer { get; set; }
         private int ticksThisSecond { get; set; }
         public bool Over { get; set; }
+        private bool First { get; set; }
 
         /// <summary>
         /// The constructor for effect, it accepts all the behaviour arguments for the effect
@@ -44,12 +51,17 @@ namespace ActionGame
             this.Description = description;
             this.Value = value;
             this.Lifetime = lifetime;
+            this.LifetimeMax = lifetime;
             this.Tick = tick;
             this.Parent = parent;
             this.Over = false;
             this.When = when;
             this.Hostile = ishostile;
-            emitters = new List<ParticleEmitter>();
+            Emitters = new List<ParticleEmitter>();
+            Lights = new List<LightSource>();
+            Sounds = new List<Sound>();
+            SoundEffects = new List<SoundEffect>();
+            First = true;
         }
 
         public StatusEffect(StatusEffect effect)
@@ -58,13 +70,31 @@ namespace ActionGame
             this.NameGame = effect.NameGame;
             this.Description = effect.Description;
             this.Value = effect.Value;
-            this.Lifetime = effect.Lifetime;
+            this.Lifetime = effect.LifetimeMax;
+            this.LifetimeMax = effect.LifetimeMax;
             this.Tick = effect.Tick;
             this.Parent = effect.Parent;
             this.Over = false;
             this.When = effect.When;
             this.Hostile = effect.Hostile;
-            emitters = new List<ParticleEmitter>();
+            Emitters = new List<ParticleEmitter>();
+            Lights = new List<LightSource>();
+            First = true;
+        }
+
+        public void Begin()
+        {
+            foreach (ParticleEmitter emitter in Emitters)
+            {
+                emitter.Parent = this.Parent;
+                ParticleManager.Instance().AddEmitter(emitter);
+            }
+
+            foreach (LightSource light in Lights)
+            {
+                light.Parent = this.Parent;
+                LightManager.Instance().AddLight(light);
+            }
         }
 
         // Normal Update Method
@@ -73,14 +103,21 @@ namespace ActionGame
             // Decrement iterations every time the effect updates
             float timeLapse = gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
 
+            if (First)
+            {
+                Begin();
+                First = false;
+            }
+
             Lifetime -= timeLapse;
 
             if (Tick > 0)
             {
                 tickTimer += timeLapse;
-                float emitTimerGoal = 1 / Tick;
+                
+                float tickTimerGoal = 1 / (float)Tick;
 
-                if (tickTimer > emitTimerGoal && ticksThisSecond < Tick)
+                if (tickTimer > tickTimerGoal && ticksThisSecond < Tick)
                 {
                     this.Use(Parent, gameTime);
                     ticksThisSecond++;
@@ -97,24 +134,6 @@ namespace ActionGame
             }
         }
 
-        // Used for the reflect projectile effect
-        //public void Update(GameTime gameTime, Entity parent, Projectile damageSource)
-        //{
-        //    Lifetime -= gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-        //    // If it is less than zero flag the effect for removal
-        //    if (Lifetime < 0)
-        //    {
-        //        if (Caster)
-        //            this.Last((Entity)Creator);
-        //        else
-        //            this.Last(parent);
-
-        //        Over = true;
-        //    }
-        //    else // Otherwise run all the update logic
-        //        this.Use(parent, damageSource);
-        //}
-
         public void Use(Entity target, GameTime gameTime)
         {
             float timeLapse = gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
@@ -129,7 +148,6 @@ namespace ActionGame
             {
                 // Change the position of the target by a multiplier on its velocity
                 // Effects are updated after the parent is, and therefore can do things like this:
-                Console.WriteLine(this);
                 target.Position += target.Velocity * Value * timeLapse;
             }
             else if (this.Name == Status.noability && target.canCast)
@@ -175,6 +193,11 @@ namespace ActionGame
                 target.canBeHealed = true;
             else if (this.Name == Status.lifetime)
                 target.isAlive = false;
+
+            foreach(LightSource light in Lights)
+            {
+                LightManager.Instance().RemoveLight(light);
+            }
         }
     }
 }
