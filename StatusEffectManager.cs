@@ -19,6 +19,12 @@ namespace ActionGame
         {
             effect.Parent = (Entity)(this.Parent);
             this.effects.Add(effect);
+            foreach (ParticleEmitter emitter in effect.Emitters)
+            {
+                ParticleEmitter emit = new ParticleEmitter(emitter);
+                emit.Parent = this.Parent;
+                ParticleManager.Instance().AddEmitter(emit);
+            }
         }
 
         public void AddEffect(List<StatusEffect> effects)
@@ -26,6 +32,11 @@ namespace ActionGame
             foreach (StatusEffect effect in effects)
             {
                 this.effects.Add(effect);
+                foreach (ParticleEmitter emitter in effect.Emitters)
+                {
+                    ParticleEmitter emit = new ParticleEmitter(emitter);
+                    ParticleManager.Instance().AddEmitter(emit);
+                }
             }
         }
 
