@@ -47,8 +47,8 @@ namespace ActionGame
 
         private Camera()
         {
-            ZoomMin = 0.25f;
-            ZoomMax = 1f;
+            ZoomMin = 0.15f;
+            ZoomMax = 0.5f;
         }
 
         public static Camera Instance()
