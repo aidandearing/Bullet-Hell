@@ -1,0 +1,33 @@
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
+
+namespace ActionGame
+{
+    class UIHealthBar
+    {
+        public Texture2D Texture { get; set; }
+        public Rectangle Rect { get; set; }
+        public Color Colour { get; set; }
+        public Entity Parent { get; set; }
+
+        public UIHealthBar(Texture2D texture, Rectangle rect, Color colour, Entity parent)
+        {
+            this.Texture = texture;
+            this.Rect = rect;
+            this.Colour = colour;
+            this.Parent = parent;
+        }
+
+        public void Update(GameTime gameTime)
+        {
+            Rect = new Rectangle((int)Parent.Position.X - Texture.Width / 2, (int)Parent.Position.Y - 100, (int)(Texture.Width * 2 * (Parent.Health / Parent.HealthMax)), 8);
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            spriteBatch.Draw(Texture, Rect, Colour);
+        }
+    }
+}
