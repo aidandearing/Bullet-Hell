@@ -121,7 +121,7 @@ namespace ActionGame
 
                     if (generate)
                     {
-                        Scene scene = new Scene("textures_noisy1", Biome, 1, 0.0001f, true);
+                        Scene scene = new Scene("textures_noisy1", Biome, 0, 0.0001f, true);
                         scene.Scale = new Vector2(TERRAIN_SCALE, TERRAIN_SCALE);
                         int xS = (int)Math.Floor((double)(Position.X * WorldSpace.CHUNKSIZE + (x - WorldSpace.CHUNKSIZE / WorldSpace.TILESIZE / 2) * WorldSpace.TILESIZE));
                         int yS = (int)Math.Floor((double)(Position.Y * WorldSpace.CHUNKSIZE + (y - WorldSpace.CHUNKSIZE / WorldSpace.TILESIZE / 2) * WorldSpace.TILESIZE));
@@ -130,36 +130,31 @@ namespace ActionGame
                         scene.isCollideRectangular = true;
                         scene.CollisionRectangle = new Rectangle((int)scene.Position.X - 16, (int)scene.Position.Y - 16, (int)(scene.Texture.Width * scene.Scale.X) + 32, (int)(scene.Texture.Height * scene.Scale.Y) + 32);
 
-                        texture = (Game1.random.Next(1, 9) + texture * 2) / 3;
-
-                        if (texture > 3 && texture <= 6)
+                        texture = Game1.random.Next(1, 10);
+                        if (texture == 1)
                         {
-                            texture -= 3;
-                            scene.Texture = Scene.Textures["textures_noisy" + texture.ToString()];
-                        }
-                        else if (texture > 6)
-                        {
-                            texture -= 6;
-                            scene.Texture = Scene.Textures["textures_stripped" + texture.ToString()];
+                            texture = Game1.random.Next(1, 5);
                         }
                         else
-                        {
-                            scene.Texture = Scene.Textures["textures_smooth" + texture.ToString()];
-                        }
+                            texture = 1;
+
+                        scene.Texture = Scene.Textures["textures_ground_dungeon_tile" + texture.ToString()];
 
                         scene.Start();
                         AddScene(scene);
                     }
                     else
                     {
-                        Scene scene = new Scene("textures_noisy1", Biome, 0.01f, 0.001f, true);
+                        Scene scene = new Scene("DungeonWallGrey", Biome, 0.01f, 0.001f, false);
                         scene.Scale = new Vector2(TERRAIN_SCALE, TERRAIN_SCALE);
                         int xS = (int)Math.Floor((double)(Position.X * WorldSpace.CHUNKSIZE + (x - WorldSpace.CHUNKSIZE / WorldSpace.TILESIZE / 2) * WorldSpace.TILESIZE));
                         int yS = (int)Math.Floor((double)(Position.Y * WorldSpace.CHUNKSIZE + (y - WorldSpace.CHUNKSIZE / WorldSpace.TILESIZE / 2) * WorldSpace.TILESIZE));
                         Vector2 position = new Vector2(xS, yS);
                         scene.Position = position;
                         scene.isCollidable = true;
-                        scene.CollisionRadius = 128;
+                        scene.CollisionRadius = 256;
+                        scene.isCollideRectangular = true;
+                        scene.CollisionRectangle = new Rectangle((int)scene.Position.X, (int)scene.Position.Y, (int)scene.CollisionRadius, (int)scene.CollisionRadius);
                         scene.Start();
                         AddScene(scene);
                     }
