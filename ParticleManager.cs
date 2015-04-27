@@ -44,7 +44,6 @@ namespace ActionGame
             foreach (ParticleEmitter emitter in deadEmitters)
                 Emitters.Remove(emitter);
 
-
             deadParticles = new List<Particle>();
             deadEmitters = new List<ParticleEmitter>();
         }
