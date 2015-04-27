@@ -45,10 +45,10 @@ namespace ActionGame
             this.Lifetime = lifetime;
             this.Velocity = velocity;
             this.VelocityEnd = velocityEnd;
-            this.PositionInherited = MathHelper.Clamp(positionInherited, 0, 1);
+            this.PositionInherited = positionInherited;
             this.RotationVelocity = rotationVelocity;
             this.RotationVelocityEnd = rotationVelocityEnd;
-            this.RotationInherited = MathHelper.Clamp(rotationInherited, 0, 1);
+            this.RotationInherited = rotationInherited;
             this.Colour = colour;
             this.ColourEnd = colourEnd;
             this.Scale = scale;
