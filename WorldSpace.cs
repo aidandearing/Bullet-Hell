@@ -803,12 +803,12 @@ namespace ActionGame
 
         public static float PixelsToMetres(float value)
         {
-            return value / TILESIZE / 2;
+            return value / TILESIZE;
         }
 
         public static float MetresToPixels(float value)
         {
-            return value * TILESIZE * 2;
+            return value * TILESIZE;
         }
 
         public void CheckPositionWithinBounds(StaticObject obj)
@@ -834,7 +834,7 @@ namespace ActionGame
 
             // If every chunk incremented the counter then every chunk found the obj to be outside them, and the obj should be moved back within the nearest chunk
             if (count == chunks.Count)
-                obj.Position = nearest.Position * CHUNKSIZE;
+                obj.Position = nearest.Position * CHUNKSIZE + new Vector2(Game1.random.Next(256), Game1.random.Next(256));
         }
 
         public void SwitchStates()
